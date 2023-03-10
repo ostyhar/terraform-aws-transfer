@@ -56,6 +56,12 @@ variable "protocols" {
   default     = ["SFTP"]
 }
 
+variable "domain" {
+  type        = string
+  description = "The domain of the storage system that is used for file transfers."
+  default     = "S3"  
+}
+
 variable "security_policy_name" {
   type        = string
   description = "Specifies the name of the security policy that is attached to the server."
@@ -72,4 +78,8 @@ variable "certificate" {
   type        = string
   description = "The Amazon Resource Name (ARN) of the AWS Certificate Manager (ACM) certificate."
   default     = null
+}
+
+variable "s3_bucket_name" {
+  
 }

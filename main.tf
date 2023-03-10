@@ -2,43 +2,46 @@ data "aws_region" "current" {}
 
 data "aws_caller_identity" "current" {}
 
-data "aws_iam_policy_document" "assume_role_policy" {
-  statement {
-    actions = ["sts:AssumeRole"]
+# data "aws_iam_policy_document" "assume_role_policy" {
+#   statement {
+#     actions = ["sts:AssumeRole"]
 
-    principals {
-      type        = "Service"
-      identifiers = ["transfer.amazonaws.com"]
-    }
-  }
-}
+#     principals {
+#       type        = "Service"
+#       identifiers = [
+#         "transfer.amazonaws.com",
+#         "ec2.amazonaws.com"
+#       ]
+#     }
+#   }
+# }
 
-resource "aws_iam_role" "main" {
-  name               = var.iam_role_name
-  description        = var.iam_role_description
-  assume_role_policy = data.aws_iam_policy_document.assume_role_policy.json
-  tags               = var.tags
-}
+# resource "aws_iam_role" "main" {
+#   name               = var.iam_role_name
+#   description        = var.iam_role_description
+#   assume_role_policy = data.aws_iam_policy_document.assume_role_policy.json
+#   tags               = var.tags
+# }
 
-data "aws_iam_policy_document" "role_policy" {
-  statement {
-    actions = [
-      "logs:DescribeLogStreams",
-      "logs:CreateLogGroup",
-      "logs:CreateLogStream",
-      "logs:PutLogEvents",
-    ]
-    resources = [
-      format("arn:aws:logs:%s:%s:*", data.aws_region.current.name, data.aws_caller_identity.current.account_id)
-    ]
-  }
-}
+# data "aws_iam_policy_document" "role_policy" {
+#   statement {
+#     actions = [
+#       "logs:DescribeLogStreams",
+#       "logs:CreateLogGroup",
+#       "logs:CreateLogStream",
+#       "logs:PutLogEvents",
+#     ]
+#     resources = [
+#       format("arn:aws:logs:%s:%s:*", data.aws_region.current.name, data.aws_caller_identity.current.account_id)
+#     ]
+#   }
+# }
 
-resource "aws_iam_role_policy" "main" {
-  name   = var.iam_role_name
-  role   = aws_iam_role.main.name
-  policy = data.aws_iam_policy_document.role_policy.json
-}
+# resource "aws_iam_role_policy" "main" {
+#   name   = var.iam_role_name
+#   role   = aws_iam_role.main.name
+#   policy = data.aws_iam_policy_document.role_policy.json
+# }
 
 resource "aws_transfer_server" "main" {
   identity_provider_type = "SERVICE_MANAGED"
@@ -57,6 +60,7 @@ resource "aws_transfer_server" "main" {
   }
 
   protocols            = var.protocols
+  domain               = var.domain
   host_key             = var.host_key
   security_policy_name = var.security_policy_name
   certificate          = var.certificate
@@ -76,4 +80,8 @@ resource "aws_route53_record" "main" {
   records = [
     aws_transfer_server.main.endpoint
   ]
+}
+
+data "aws_s3_bucket" "bucket" {
+  bucket = var.s3_bucket_name
 }
